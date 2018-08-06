@@ -85,7 +85,6 @@ public class UpdateDataHolder implements Parcelable, Serializable {
 
     public UpdateDataHolder(long time, float voc, float temperature, float humidity, float pressure, int info,
                             int adc, String fwVer, String raw, String hw, String mac, int rssi, float batteryVoltage, int errorCode) {
-        mTime = time;
         mVOC = voc;
         mTemperature = temperature;
         mHumidity = humidity;
@@ -99,6 +98,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mBatteryVoltage = batteryVoltage;
         mErrorCode = errorCode;
         setInfo(info);
+        mTime = time;
     }
 
     public UpdateDataHolder(Parcel in) {
@@ -166,27 +166,27 @@ public class UpdateDataHolder implements Parcelable, Serializable {
 
     public void setInfo(int info) {
         mInfo = new AtmotubeInfo(info, mFwVer);
-        mTime = System.currentTimeMillis();
+        mTime = System.currentTimeMillis() / 1000;
     }
 
     public void setVOC(float VOC) {
         mVOC = VOC;
-        mTime = System.currentTimeMillis();
+        mTime = System.currentTimeMillis() / 1000;
     }
 
     public void setTemperature(float temperature) {
         mTemperature = temperature;
-        mTime = System.currentTimeMillis();
+        mTime = System.currentTimeMillis() / 1000;
     }
 
     public void setHumidity(float humidity) {
         mHumidity = humidity;
-        mTime = System.currentTimeMillis();
+        mTime = System.currentTimeMillis() / 1000;
     }
 
     public void updateData(UpdateDataHolder holder) {
         if (holder != null) {
-            mTime = System.currentTimeMillis();
+            mTime = System.currentTimeMillis() / 1000;
             if (holder.mVOC != UNKNOWN) {
                 mVOC = holder.mVOC;
             }
