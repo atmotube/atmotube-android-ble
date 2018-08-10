@@ -25,16 +25,15 @@ import org.json.JSONException;
 
 import java.io.Serializable;
 
+/**
+ * Data holder with Atmotube packet information
+ */
 public class UpdateDataHolder implements Parcelable, Serializable {
 
-    private static final String HW_VER_DEFAULT = "0000";
-    private static final String HW_VER_1_0 = "0100";
-    private static final String HW_VER_1_2 = "0102";
-    private static final String HW_VER_1_3 = "0103";
-
-    private static final String HW1 = "1.0";
-    private static final String HW2 = "2.0";
-    private static final String HW3 = "3.0";
+    public static final int HW_VER_UNKNOWN = 0;
+    public static final int HW_VER_1_0 = 1;
+    public static final int HW_VER_2_0 = 2;
+    public static final int HW_VER_3_0 = 3;
 
     public static final int UNKNOWN = -1000;
 
@@ -50,7 +49,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     private int mADC;
     private String mFwVer;
     private String mRaw;
-    private String mHwVer;
+    private int mHwVer;
     private String mMac;
     private int mRssi;
     private int mErrorCode;
@@ -74,17 +73,38 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         return mVOC != UNKNOWN && mTemperature != UNKNOWN && mHumidity != UNKNOWN && mInfo != null && mVOC > 0;
     }
 
-    public UpdateDataHolder(float voc, float temperature, float humidity, int info, int adc, String fwVer, String raw, String hw, String mac, int rssi,
-                            float batteryVoltage, int errorCode) {
-        this(System.currentTimeMillis() / 1000, voc, temperature, humidity, 0, info, adc, fwVer, raw, hw, mac, rssi, batteryVoltage, errorCode);
+    public UpdateDataHolder(float voc,
+                            float temperature,
+                            float humidity,
+                            float pressure,
+                            int info,
+                            int adc,
+                            String fwVer,
+                            String raw,
+                            int hwVer,
+                            String mac,
+                            int rssi,
+                            float batteryVoltage,
+                            int errorCode) {
+        this(System.currentTimeMillis() / 1000, voc, temperature, humidity, pressure, info, adc,
+                fwVer, raw, hwVer, mac, rssi, batteryVoltage, errorCode);
     }
 
-    public UpdateDataHolder(float voc, float temperature, float humidity, float pressure, int info, String fwVer, String raw, String mac, int rssi, float batteryVoltage, int errorCode) {
-        this(System.currentTimeMillis() / 1000, voc, temperature, humidity, pressure, info, 0, fwVer, raw, HW_VER_1_3, mac, rssi, batteryVoltage, errorCode);
-    }
-
-    public UpdateDataHolder(long time, float voc, float temperature, float humidity, float pressure, int info,
-                            int adc, String fwVer, String raw, String hw, String mac, int rssi, float batteryVoltage, int errorCode) {
+    public UpdateDataHolder(long time,
+                            float voc,
+                            float temperature,
+                            float humidity,
+                            float pressure,
+                            int info,
+                            int adc,
+                            String fwVer,
+                            String raw,
+                            int hwVer,
+                            String mac,
+                            int rssi,
+                            float batteryVoltage,
+                            int errorCode) {
+        mTime = time;
         mVOC = voc;
         mTemperature = temperature;
         mHumidity = humidity;
@@ -92,13 +112,12 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mADC = adc;
         mFwVer = fwVer;
         mRaw = raw;
-        mHwVer = hw;
+        mHwVer = hwVer;
         mMac = mac;
         mRssi = rssi;
         mBatteryVoltage = batteryVoltage;
         mErrorCode = errorCode;
         setInfo(info);
-        mTime = time;
     }
 
     public UpdateDataHolder(Parcel in) {
@@ -123,7 +142,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mADC = in.readInt();
         mFwVer = in.readString();
         mRaw = in.readString();
-        mHwVer = in.readString();
+        mHwVer = in.readInt();
         mMac = in.readString();
         mInfo = new AtmotubeInfo(in.readInt(), mFwVer);
         mBatteryVoltage = in.readFloat();
@@ -147,7 +166,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         dest.writeInt(mADC);
         dest.writeString(mFwVer);
         dest.writeString(mRaw);
-        dest.writeString(mHwVer);
+        dest.writeInt(mHwVer);
         dest.writeString(mMac);
         dest.writeInt(mInfo.getInfoByte());
         dest.writeFloat(mBatteryVoltage);
@@ -166,7 +185,6 @@ public class UpdateDataHolder implements Parcelable, Serializable {
 
     public void setInfo(int info) {
         mInfo = new AtmotubeInfo(info, mFwVer);
-        mTime = System.currentTimeMillis() / 1000;
     }
 
     public void setVOC(float VOC) {
@@ -208,36 +226,8 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         return mFwVer != null ? mFwVer.toUpperCase() : null;
     }
 
-    public String getHwVer() {
-        if (TextUtils.equals(mHwVer, UpdateDataHolder.HW_VER_DEFAULT) || TextUtils.equals(mHwVer, UpdateDataHolder.HW_VER_1_0)) {
-            return HW1;
-        } else if (TextUtils.equals(mHwVer, UpdateDataHolder.HW_VER_1_2)) {
-            return HW2;
-        } else if (TextUtils.equals(mHwVer, UpdateDataHolder.HW_VER_1_3)) {
-            return HW2;
-        }
-        if (mFwVer != null) {
-            if (mFwVer.startsWith("70")) {
-                return HW1;
-            } else if (mFwVer.startsWith("72")) {
-                return HW2;
-            } else if (mFwVer.startsWith("73")) {
-                return HW3;
-            }
-        }
-        return "0.0";
-    }
-
     public void setCurrentFwVersion(String fwVer) {
         mFwVer = fwVer;
-    }
-
-    public boolean isHw2() {
-        return TextUtils.equals(getHwVer(), HW2);
-    }
-
-    public boolean isHw3() {
-        return TextUtils.equals(getHwVer(), HW3);
     }
 
     public boolean isActivated() {
@@ -302,6 +292,78 @@ public class UpdateDataHolder implements Parcelable, Serializable {
 
     public float getBatteryVoltage() {
         return mBatteryVoltage;
+    }
+
+    public double getLat() {
+        return mLat;
+    }
+
+    public void setLat(double lat) {
+        mLat = lat;
+    }
+
+    public double getLon() {
+        return mLon;
+    }
+
+    public void setLon(double lon) {
+        mLon = lon;
+    }
+
+    public void setPressure(float mPressure) {
+        this.mPressure = mPressure;
+    }
+
+    public void setTime(long mTime) {
+        this.mTime = mTime;
+    }
+
+    public void setMac(String mMac) {
+        this.mMac = mMac;
+    }
+
+    public void setADC(int ADC) {
+        mADC = ADC;
+    }
+
+    public void setFwVer(String fwVer) {
+        mFwVer = fwVer;
+    }
+
+    public String getRaw() {
+        return mRaw;
+    }
+
+    public void setRaw(String raw) {
+        mRaw = raw;
+    }
+
+    public void setHwVer(int hwVer) {
+        mHwVer = hwVer;
+    }
+
+    public int getRssi() {
+        return mRssi;
+    }
+
+    public void setRssi(int rssi) {
+        mRssi = rssi;
+    }
+
+    public void setErrorCode(int errorCode) {
+        mErrorCode = errorCode;
+    }
+
+    public void setBatteryVoltage(float batteryVoltage) {
+        mBatteryVoltage = batteryVoltage;
+    }
+
+    public AtmotubeInfo getInfo() {
+        return mInfo;
+    }
+
+    public void setInfo(AtmotubeInfo info) {
+        mInfo = info;
     }
 
     public JSONArray getJSONArray() throws JSONException {
