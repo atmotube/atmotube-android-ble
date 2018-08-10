@@ -366,6 +366,18 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mInfo = info;
     }
 
+    public int getHwVer() {
+        return mHwVer;
+    }
+
+    public boolean isHw2() {
+        return mHwVer == HW_VER_2_0;
+    }
+
+    public boolean isHw3() {
+        return mHwVer == HW_VER_3_0;
+    }
+
     public JSONArray getJSONArray() throws JSONException {
         JSONArray array = new JSONArray();
         array.put(mLat);
