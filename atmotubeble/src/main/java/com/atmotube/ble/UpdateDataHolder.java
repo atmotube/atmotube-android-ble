@@ -33,7 +33,8 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     public static final int HW_VER_UNKNOWN = 0;
     public static final int HW_VER_1_0 = 1;
     public static final int HW_VER_2_0 = 2;
-    public static final int HW_VER_3_0 = 3;
+    public static final int HW_VER_PLUS = 3;
+    public static final int HW_VER_PRO = 4;
 
     public static final int UNKNOWN = -1000;
 
@@ -375,7 +376,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     }
 
     public boolean isHw3() {
-        return mHwVer == HW_VER_3_0;
+        return mHwVer == HW_VER_PLUS || mHwVer == HW_VER_PRO;
     }
 
     public JSONArray getJSONArray() throws JSONException {
