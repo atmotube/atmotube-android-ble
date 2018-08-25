@@ -320,7 +320,7 @@ public class AtmotubeUtils {
                             int pm10 = Integer.parseInt(pm10Str, 16);
                             fwVer = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift]});
                             UpdateDataHolder holder = new UpdateDataHolder(vocF, temp, hum, pressure, info, 0, fwVer, AtmotubeUtils.toHexString(scanRecord.getBytes()),
-                                    UpdateDataHolder.HW_VER_PLUS, data.getDevice().getAddress(), data.getRssi(), vF, 0);
+                                    UpdateDataHolder.HW_VER_PRO, data.getDevice().getAddress(), data.getRssi(), vF, 0);
                             holder.setPm(pm1, pm25, pm10);
                             return holder;
                         } else {

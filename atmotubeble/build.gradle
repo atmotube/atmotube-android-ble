@@ -33,7 +33,7 @@ ext {
     siteUrl = 'https://github.com/notanotherone/atmotube'
     gitUrl = 'https://github.com/notanotherone/atmotube.git'
 
-    libraryVersion = '0.1.9'
+    libraryVersion = '0.1.10'
 
     developerId = 'notanotherone'
     developerName = 'NotAnotherOne Inc.'
@@ -51,8 +51,8 @@ android {
     defaultConfig {
         minSdkVersion 18
         targetSdkVersion 27
-        versionCode 9
-        versionName "0.1.9"
+        versionCode 10
+        versionName "0.1.10"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
