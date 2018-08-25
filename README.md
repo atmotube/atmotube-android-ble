@@ -5,6 +5,6 @@ Atmotube BLE library
 # Getting Started
 ```groovy
 dependencies {
-    implementation 'com.atmotube.ble:atmotube:0.1.1'
+    implementation 'com.atmotube.ble:atmotube:0.1.9'
 }
 ```
