@@ -56,6 +56,10 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     private int mErrorCode;
     private float mBatteryVoltage;
 
+    private int mPm1 = UNKNOWN;
+    private int mPm25 = UNKNOWN;
+    private int mPm10 = UNKNOWN;
+
     private AtmotubeInfo mInfo;
 
     public UpdateDataHolder() {
@@ -71,7 +75,13 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     }
 
     public boolean isValidAllData() {
-        return mVOC != UNKNOWN && mTemperature != UNKNOWN && mHumidity != UNKNOWN && mInfo != null && mVOC > 0;
+        boolean isGeneralDataOK = mVOC != UNKNOWN && mTemperature != UNKNOWN && mHumidity != UNKNOWN && mInfo != null && mVOC > 0;
+        if (isHw3()) {
+            return isGeneralDataOK && mPressure != UNKNOWN;
+        } else if (isHw4()) {
+            return isGeneralDataOK && mPressure != UNKNOWN && mPm1 != UNKNOWN && mPm10 != UNKNOWN && mPm25 != UNKNOWN;
+        }
+        return isGeneralDataOK;
     }
 
     public UpdateDataHolder(float voc,
@@ -376,7 +386,29 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     }
 
     public boolean isHw3() {
-        return mHwVer == HW_VER_PLUS || mHwVer == HW_VER_PRO;
+        return mHwVer == HW_VER_PLUS;
+    }
+
+    public boolean isHw4() {
+        return mHwVer == HW_VER_PRO;
+    }
+
+    public void setPm(int pm1, int pm25, int pm10) {
+        mPm1 = pm1;
+        mPm25 = pm25;
+        mPm10 = pm10;
+    }
+
+    public int getPm1() {
+        return mPm1;
+    }
+
+    public int getPm25() {
+        return mPm25;
+    }
+
+    public int getPm10() {
+        return mPm10;
     }
 
     public JSONArray getJSONArray() throws JSONException {

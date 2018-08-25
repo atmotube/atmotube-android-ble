@@ -282,7 +282,9 @@ public class AtmotubeUtils {
             List<ParcelUuid> services = scanRecord.getServiceUuids();
             if (services != null) {
                 for (ParcelUuid service : services) {
-                    if (TextUtils.equals(service.getUuid().toString(), AtmotubeConstants.ATMOTUBE_SERVICE_UUID_V3.toString())) {
+                    String uuid = service.getUuid().toString();
+                    if (TextUtils.equals(uuid, AtmotubeConstants.ATMOTUBE_SERVICE_UUID_V3.toString()) ||
+                            TextUtils.equals(uuid, AtmotubeConstants.ATMOTUBE_SERVICE_UUID_V4.toString())) {
                         // atmotube v3
                         byte[] bytes = data.getScanRecord().getBytes();
                         int shift = 7;
@@ -308,10 +310,25 @@ public class AtmotubeUtils {
                         int p = Integer.parseInt(pressureStr, 16);
                         pressure = (float) p / 100;
                         info = (int) bytes[shift];
-                        shift = 57;
-                        fwVer = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift]});
-                        return new UpdateDataHolder(vocF, temp, hum, pressure, info, 0, fwVer, AtmotubeUtils.toHexString(scanRecord.getBytes()),
-                                UpdateDataHolder.HW_VER_PLUS, data.getDevice().getAddress(), data.getRssi(), vF, 0);
+                        if (TextUtils.equals(uuid, AtmotubeConstants.ATMOTUBE_SERVICE_UUID_V4.toString())) {
+                            shift = 51;
+                            String pm1Str = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
+                            int pm1 = Integer.parseInt(pm1Str, 16);
+                            String pm25Str = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
+                            int pm25 = Integer.parseInt(pm25Str, 16);
+                            String pm10Str = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
+                            int pm10 = Integer.parseInt(pm10Str, 16);
+                            fwVer = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift]});
+                            UpdateDataHolder holder = new UpdateDataHolder(vocF, temp, hum, pressure, info, 0, fwVer, AtmotubeUtils.toHexString(scanRecord.getBytes()),
+                                    UpdateDataHolder.HW_VER_PLUS, data.getDevice().getAddress(), data.getRssi(), vF, 0);
+                            holder.setPm(pm1, pm25, pm10);
+                            return holder;
+                        } else {
+                            shift = 57;
+                            fwVer = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift]});
+                            return new UpdateDataHolder(vocF, temp, hum, pressure, info, 0, fwVer, AtmotubeUtils.toHexString(scanRecord.getBytes()),
+                                    UpdateDataHolder.HW_VER_PLUS, data.getDevice().getAddress(), data.getRssi(), vF, 0);
+                        }
                     }
                 }
             }
