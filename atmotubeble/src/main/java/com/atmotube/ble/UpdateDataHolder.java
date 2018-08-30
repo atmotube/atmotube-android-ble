@@ -158,6 +158,9 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mInfo = new AtmotubeInfo(in.readInt(), mFwVer);
         mBatteryVoltage = in.readFloat();
         mErrorCode = in.readInt();
+        mPm1 = in.readInt();
+        mPm25 = in.readInt();
+        mPm10 = in.readInt();
     }
 
     @Override
@@ -182,6 +185,9 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         dest.writeInt(mInfo.getInfoByte());
         dest.writeFloat(mBatteryVoltage);
         dest.writeInt(mErrorCode);
+        dest.writeInt(mPm1);
+        dest.writeInt(mPm25);
+        dest.writeInt(mPm10);
     }
 
     public static final Creator CREATOR = new Creator() {
