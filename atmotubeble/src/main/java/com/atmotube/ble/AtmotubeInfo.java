@@ -48,7 +48,7 @@ public class AtmotubeInfo {
     }
 
     public static boolean isCalibrating(int info) {
-        return !((info & 0x64) == 0x64);
+        return !((info & 0x40) == 0x40);
     }
 
     public static boolean isCharging(int info) {
@@ -56,15 +56,15 @@ public class AtmotubeInfo {
     }
 
     public static boolean isChargingTimeout(int info) {
-        return (info & 0x16) == 0x16;
+        return (info & 0x10) == 0x10;
     }
 
     public static int getMode(int info) {
-        return (info & 0x64) == 0x64 ? 1 : 0;
+        return (info & 0x80) == 0x80 ? 1 : 0;
     }
 
     public static boolean isActivated(int info) {
-        return !((info & 0x32) == 0x32);
+        return !((info & 0x20) == 0x20);
     }
 
     public static int getBatteryLevel(int info) {
