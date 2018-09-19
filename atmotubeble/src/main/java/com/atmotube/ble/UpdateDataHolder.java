@@ -50,6 +50,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     private int mADC;
     private String mFwVer;
     private String mRaw;
+    private String mName;
     private int mHwVer;
     private String mMac;
     private int mRssi;
@@ -84,24 +85,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         return isGeneralDataOK;
     }
 
-    public UpdateDataHolder(float voc,
-                            float temperature,
-                            float humidity,
-                            float pressure,
-                            int info,
-                            int adc,
-                            String fwVer,
-                            String raw,
-                            int hwVer,
-                            String mac,
-                            int rssi,
-                            float batteryVoltage,
-                            int errorCode) {
-        this(System.currentTimeMillis() / 1000, voc, temperature, humidity, pressure, info, adc,
-                fwVer, raw, hwVer, mac, rssi, batteryVoltage, errorCode);
-    }
-
-    public UpdateDataHolder(long time,
+    public UpdateDataHolder(String name,
                             float voc,
                             float temperature,
                             float humidity,
@@ -115,6 +99,26 @@ public class UpdateDataHolder implements Parcelable, Serializable {
                             int rssi,
                             float batteryVoltage,
                             int errorCode) {
+        this(name, System.currentTimeMillis() / 1000, voc, temperature, humidity, pressure, info, adc,
+                fwVer, raw, hwVer, mac, rssi, batteryVoltage, errorCode);
+    }
+
+    public UpdateDataHolder(String name,
+                            long time,
+                            float voc,
+                            float temperature,
+                            float humidity,
+                            float pressure,
+                            int info,
+                            int adc,
+                            String fwVer,
+                            String raw,
+                            int hwVer,
+                            String mac,
+                            int rssi,
+                            float batteryVoltage,
+                            int errorCode) {
+        mName = name;
         mTime = time;
         mVOC = voc;
         mTemperature = temperature;
@@ -415,6 +419,10 @@ public class UpdateDataHolder implements Parcelable, Serializable {
 
     public int getPm10() {
         return mPm10;
+    }
+
+    public String getName() {
+        return mName;
     }
 
     public JSONArray getJSONArray() throws JSONException {
