@@ -20,12 +20,23 @@ import android.text.TextUtils;
 
 public class AtmotubeInfo {
 
+    public static final int MODE_V10_CONSTANT = 0;
+    public static final int MODE_V20_10SECONDS = 0;
+
+    public static final int MODE_PLUS_2SECONDS = 0;
+    public static final int MODE_PLUS_30SECONDS = 1;
+
+    public static final int MODE_PRO_2SECONDS = 0;
+    public static final int MODE_PRO_30SECONDS = 1;
+
     public final boolean mIsCalibrating;
     public final int mBattery;
     public final int mMode;
     public final boolean mIsChargingTimeout;
     public final boolean mIsCharging;
     public final boolean mIsActivated;
+    public final boolean mHasError;
+    public final boolean mIsBonded;
 
     private int mInfoByte;
 
@@ -36,7 +47,15 @@ public class AtmotubeInfo {
         } else {
             mIsCalibrating = AtmotubeInfo.isCalibrating(info);
         }
-        mBattery = AtmotubeInfo.getBatteryLevel(info);
+        if (fwVer != null && (fwVer.startsWith("73") || fwVer.startsWith("74"))) {
+            mHasError = hasError(info);
+            mIsBonded = isBonded(info);
+            mBattery = 0;
+        } else {
+            mHasError = false;
+            mIsBonded = false;
+            mBattery = AtmotubeInfo.getBatteryLevel(info);
+        }
         mMode = AtmotubeInfo.getMode(info);
         mIsChargingTimeout = AtmotubeInfo.isChargingTimeout(info);
         mIsCharging = AtmotubeInfo.isCharging(info);
@@ -45,6 +64,14 @@ public class AtmotubeInfo {
 
     public int getInfoByte() {
         return mInfoByte;
+    }
+
+    public static boolean isBonded(int info) {
+        return !((info & 0x2) == 0x2);
+    }
+
+    public static boolean hasError(int info) {
+        return !((info & 0x4) == 0x4);
     }
 
     public static boolean isCalibrating(int info) {

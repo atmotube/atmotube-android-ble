@@ -55,11 +55,14 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     private String mMac;
     private int mRssi;
     private int mErrorCode;
-    private float mBatteryVoltage;
+    private int mBatteryVoltage;
+    private int mBatteryPercentage = UNKNOWN;
 
     private int mPm1 = UNKNOWN;
     private int mPm25 = UNKNOWN;
     private int mPm10 = UNKNOWN;
+
+    private int mDeviceCRC = UNKNOWN;
 
     private AtmotubeInfo mInfo;
 
@@ -97,10 +100,11 @@ public class UpdateDataHolder implements Parcelable, Serializable {
                             int hwVer,
                             String mac,
                             int rssi,
-                            float batteryVoltage,
+                            int batteryVoltage,
+                            int batteryPercentage,
                             int errorCode) {
         this(name, System.currentTimeMillis() / 1000, voc, temperature, humidity, pressure, info, adc,
-                fwVer, raw, hwVer, mac, rssi, batteryVoltage, errorCode);
+                fwVer, raw, hwVer, mac, rssi, batteryVoltage, batteryPercentage, errorCode);
     }
 
     public UpdateDataHolder(String name,
@@ -116,7 +120,8 @@ public class UpdateDataHolder implements Parcelable, Serializable {
                             int hwVer,
                             String mac,
                             int rssi,
-                            float batteryVoltage,
+                            int batteryVoltage,
+                            int batteryPercentage,
                             int errorCode) {
         mName = name;
         mTime = time;
@@ -133,6 +138,13 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mBatteryVoltage = batteryVoltage;
         mErrorCode = errorCode;
         setInfo(info);
+        if (mInfo.mHasError) {
+            mBatteryVoltage = 0;
+            mErrorCode = mBatteryVoltage;
+        }
+        if (isHw3() || isHw4()) {
+            mBatteryPercentage = batteryPercentage;
+        }
     }
 
     public UpdateDataHolder(Parcel in) {
@@ -160,11 +172,13 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mHwVer = in.readInt();
         mMac = in.readString();
         mInfo = new AtmotubeInfo(in.readInt(), mFwVer);
-        mBatteryVoltage = in.readFloat();
+        mBatteryVoltage = in.readInt();
         mErrorCode = in.readInt();
         mPm1 = in.readInt();
         mPm25 = in.readInt();
         mPm10 = in.readInt();
+        mDeviceCRC = in.readInt();
+        mBatteryPercentage = in.readInt();
     }
 
     @Override
@@ -187,11 +201,13 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         dest.writeInt(mHwVer);
         dest.writeString(mMac);
         dest.writeInt(mInfo.getInfoByte());
-        dest.writeFloat(mBatteryVoltage);
+        dest.writeInt(mBatteryVoltage);
         dest.writeInt(mErrorCode);
         dest.writeInt(mPm1);
         dest.writeInt(mPm25);
         dest.writeInt(mPm10);
+        dest.writeInt(mDeviceCRC);
+        dest.writeInt(mBatteryPercentage);
     }
 
     public static final Creator CREATOR = new Creator() {
@@ -276,6 +292,9 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     }
 
     public int getBattery() {
+        if (mBatteryPercentage != UNKNOWN) {
+            return mBatteryPercentage;
+        }
         return mInfo != null ? mInfo.mBattery : 0;
     }
 
@@ -312,7 +331,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     }
 
     public float getBatteryVoltage() {
-        return mBatteryVoltage;
+        return mBatteryVoltage / 1000;
     }
 
     public double getLat() {
@@ -375,7 +394,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mErrorCode = errorCode;
     }
 
-    public void setBatteryVoltage(float batteryVoltage) {
+    public void setBatteryVoltage(int batteryVoltage) {
         mBatteryVoltage = batteryVoltage;
     }
 
@@ -401,6 +420,10 @@ public class UpdateDataHolder implements Parcelable, Serializable {
 
     public boolean isHw4() {
         return mHwVer == HW_VER_PRO;
+    }
+
+    public void setName(String name) {
+        mName = name;
     }
 
     public void setPm(int pm1, int pm25, int pm10) {
@@ -435,5 +458,17 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         array.put(mHumidity);
         array.put(mTime);
         return array;
+    }
+
+    public int getDeviceCRC() {
+        return mDeviceCRC;
+    }
+
+    public void setDeviceCRC(int deviceCRC) {
+        mDeviceCRC = deviceCRC;
+    }
+
+    public boolean isBonded() {
+        return mInfo != null && mInfo.mIsBonded;
     }
 }
