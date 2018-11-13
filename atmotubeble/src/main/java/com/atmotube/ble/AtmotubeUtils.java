@@ -247,7 +247,7 @@ public class AtmotubeUtils {
      * @return {@link UpdateDataHolder} or null if scanRecord does not contain valid Atmotube data
      */
     public static UpdateDataHolder getDataFromScanResult(ScanResult data) {
-        if (data == null || data.getScanRecord() == null || data.getDevice() == null || data.getDevice().getName() == null) {
+        if (data == null || data.getScanRecord() == null || data.getDevice() == null || data.getDevice().getName() == null || data.getDevice().getAddress() == null) {
             return null;
         }
         String name = data.getDevice().getName();
@@ -259,6 +259,7 @@ public class AtmotubeUtils {
             float temp = 0;
             float pressure = 0;
             int hum = 0;
+            int baseline = 0;
             String fwVer = "";
             if (TextUtils.equals(name.toLowerCase(), ATMOTEST_V_3_0_NAME)) {
                 ScanRecord scanRecord = data.getScanRecord();
@@ -270,15 +271,17 @@ public class AtmotubeUtils {
                     String vocStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
                     int voc = Integer.parseInt(vocStr, 16);
                     vocF = (float) voc / 1000;
-                    shift++; // skip battery
+                    batteryPercentage = (int) bytes[shift++];
                     info = 0x20;
                     String voltageStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
                     batteryVoltage = Integer.parseInt(voltageStr, 16);
                     fwVer = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
-                    errorCode = (int) bytes[shift];
+                    errorCode = (int) bytes[shift++];
+                    String baselineStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift]});
+                    baseline = Integer.parseInt(baselineStr, 16);
                 }
-                return new UpdateDataHolder(name, vocF, temp, hum, pressure, info, 0, fwVer, AtmotubeUtils.toHexString(scanRecord.getBytes()),
-                        UpdateDataHolder.HW_VER_PLUS, data.getDevice().getAddress(), data.getRssi(), batteryVoltage, batteryPercentage, errorCode);
+                return new UpdateDataHolder(name, vocF, temp, hum, pressure, info, baseline, fwVer, AtmotubeUtils.toHexString(scanRecord.getBytes()),
+                        getHardwareVer(fwVer, null), data.getDevice().getAddress(), data.getRssi(), batteryVoltage, batteryPercentage, errorCode);
             } else if (TextUtils.equals(name.toLowerCase(), ATMOTUBE_NAME)) {
                 ScanRecord scanRecord = data.getScanRecord();
                 List<ParcelUuid> services = scanRecord.getServiceUuids();
@@ -329,7 +332,7 @@ public class AtmotubeUtils {
                             } else {
                                 shift = 51;
                                 String baselineStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
-                                int baseline = Integer.parseInt(baselineStr, 16);
+                                baseline = Integer.parseInt(baselineStr, 16);
                                 String voltageStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift]});
                                 try {
                                     batteryVoltage = Integer.parseInt(voltageStr, 16);
@@ -385,9 +388,9 @@ public class AtmotubeUtils {
             case UpdateDataHolder.HW_VER_2_0:
                 return "2.0";
             case UpdateDataHolder.HW_VER_PLUS:
-                return "Plus";
+                return "PLUS";
             case UpdateDataHolder.HW_VER_PRO:
-                return "Pro";
+                return "PRO";
             default:
             case UpdateDataHolder.HW_VER_1_0:
                 return "1.0";

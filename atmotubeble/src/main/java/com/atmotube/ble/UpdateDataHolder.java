@@ -330,8 +330,12 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         return mErrorCode;
     }
 
-    public float getBatteryVoltage() {
-        return mBatteryVoltage / 1000;
+    public int getBatteryVoltage() {
+        return mBatteryVoltage;
+    }
+
+    public float getBatteryVoltageFloat() {
+        return (float) mBatteryVoltage / 100;
     }
 
     public double getLat() {

@@ -18,7 +18,9 @@ package com.atmotube.ble;
 
 import android.text.TextUtils;
 
-public class AtmotubeInfo {
+import java.io.Serializable;
+
+public class AtmotubeInfo implements Serializable {
 
     public static final int MODE_V10_CONSTANT = 0;
     public static final int MODE_V20_10SECONDS = 0;
@@ -42,10 +44,15 @@ public class AtmotubeInfo {
 
     public AtmotubeInfo(int info, String fwVer) {
         mInfoByte = info;
+        mIsActivated = AtmotubeInfo.isActivated(info);
         if (TextUtils.equals(fwVer, "700305")) {
             mIsCalibrating = false;
         } else {
-            mIsCalibrating = AtmotubeInfo.isCalibrating(info);
+            if (!mIsActivated) {
+                mIsCalibrating = false;
+            } else {
+                mIsCalibrating = AtmotubeInfo.isCalibrating(info);
+            }
         }
         if (fwVer != null && (fwVer.startsWith("73") || fwVer.startsWith("74"))) {
             mHasError = hasError(info);
@@ -59,7 +66,6 @@ public class AtmotubeInfo {
         mMode = AtmotubeInfo.getMode(info);
         mIsChargingTimeout = AtmotubeInfo.isChargingTimeout(info);
         mIsCharging = AtmotubeInfo.isCharging(info);
-        mIsActivated = AtmotubeInfo.isActivated(info);
     }
 
     public int getInfoByte() {
@@ -67,11 +73,11 @@ public class AtmotubeInfo {
     }
 
     public static boolean isBonded(int info) {
-        return !((info & 0x2) == 0x2);
+        return (info & 0x2) == 0x2;
     }
 
     public static boolean hasError(int info) {
-        return !((info & 0x4) == 0x4);
+        return (info & 0x4) == 0x4;
     }
 
     public static boolean isCalibrating(int info) {
