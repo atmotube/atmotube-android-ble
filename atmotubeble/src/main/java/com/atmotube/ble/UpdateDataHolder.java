@@ -171,7 +171,8 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mRaw = in.readString();
         mHwVer = in.readInt();
         mMac = in.readString();
-        mInfo = in.readInt() == -1 ? null : new AtmotubeInfo(in.readInt(), mFwVer);
+        int b = in.readInt();
+        mInfo = b == -1 ? null : new AtmotubeInfo(b, mFwVer);
         mBatteryVoltage = in.readInt();
         mErrorCode = in.readInt();
         mPm1 = in.readInt();
