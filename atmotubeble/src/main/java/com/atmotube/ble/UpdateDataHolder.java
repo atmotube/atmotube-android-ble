@@ -171,7 +171,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mRaw = in.readString();
         mHwVer = in.readInt();
         mMac = in.readString();
-        mInfo = new AtmotubeInfo(in.readInt(), mFwVer);
+        mInfo = in.readInt() == -1 ? null : new AtmotubeInfo(in.readInt(), mFwVer);
         mBatteryVoltage = in.readInt();
         mErrorCode = in.readInt();
         mPm1 = in.readInt();
@@ -200,7 +200,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         dest.writeString(mRaw);
         dest.writeInt(mHwVer);
         dest.writeString(mMac);
-        dest.writeInt(mInfo.getInfoByte());
+        dest.writeInt(mInfo == null ? -1 : mInfo.getInfoByte());
         dest.writeInt(mBatteryVoltage);
         dest.writeInt(mErrorCode);
         dest.writeInt(mPm1);
@@ -400,6 +400,10 @@ public class UpdateDataHolder implements Parcelable, Serializable {
 
     public void setBatteryVoltage(int batteryVoltage) {
         mBatteryVoltage = batteryVoltage;
+    }
+
+    public void setBatteryPercentage(int batteryPercentage) {
+        mBatteryPercentage = batteryPercentage;
     }
 
     public AtmotubeInfo getInfo() {

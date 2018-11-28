@@ -73,11 +73,11 @@ public class AtmotubeInfo implements Serializable {
     }
 
     public static boolean isBonded(int info) {
-        return (info & 0x2) == 0x2;
+        return (info & 0x4) == 0x4;
     }
 
     public static boolean hasError(int info) {
-        return (info & 0x4) == 0x4;
+        return (info & 0x2) == 0x2;
     }
 
     public static boolean isCalibrating(int info) {
