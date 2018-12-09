@@ -277,8 +277,10 @@ public class AtmotubeUtils {
                     batteryVoltage = Integer.parseInt(voltageStr, 16);
                     fwVer = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
                     errorCode = (int) bytes[shift++];
-                    String baselineStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift]});
+                    String baselineStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
                     baseline = Integer.parseInt(baselineStr, 16);
+                    hum = getHumidity(bytes[shift++]);
+                    temp = getTemperature(bytes[shift]);
                 }
                 return new UpdateDataHolder(name, vocF, temp, hum, pressure, info, baseline, fwVer, AtmotubeUtils.toHexString(scanRecord.getBytes()),
                         getHardwareVer(fwVer, null), data.getDevice().getAddress(), data.getRssi(), batteryVoltage, batteryPercentage, errorCode);
