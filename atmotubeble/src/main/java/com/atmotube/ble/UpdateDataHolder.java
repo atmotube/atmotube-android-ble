@@ -79,7 +79,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     }
 
     public boolean isValidAllData() {
-        boolean isGeneralDataOK = mVOC != UNKNOWN && mTemperature != UNKNOWN && mHumidity != UNKNOWN && mInfo != null && mVOC > 0;
+        boolean isGeneralDataOK = mVOC != UNKNOWN && mTemperature != UNKNOWN && mHumidity != UNKNOWN && mInfo != null;
         if (isHw3()) {
             return isGeneralDataOK && mPressure != UNKNOWN;
         } else if (isHw4()) {
