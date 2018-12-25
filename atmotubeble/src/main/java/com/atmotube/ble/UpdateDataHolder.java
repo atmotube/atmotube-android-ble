@@ -93,7 +93,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
                             float temperature,
                             float humidity,
                             float pressure,
-                            int info,
+                            Integer info,
                             int adc,
                             String fwVer,
                             String raw,
@@ -113,7 +113,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
                             float temperature,
                             float humidity,
                             float pressure,
-                            int info,
+                            Integer info,
                             int adc,
                             String fwVer,
                             String raw,
@@ -138,7 +138,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mBatteryVoltage = batteryVoltage;
         mErrorCode = errorCode;
         setInfo(info);
-        if (mInfo.mHasError) {
+        if (mInfo != null && mInfo.mHasError) {
             mBatteryVoltage = 0;
             mErrorCode = mBatteryVoltage;
         }
@@ -221,8 +221,10 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         }
     };
 
-    public void setInfo(int info) {
-        mInfo = new AtmotubeInfo(info, mFwVer);
+    public void setInfo(Integer info) {
+        if (info != null) {
+            mInfo = new AtmotubeInfo(info, mFwVer);
+        }
     }
 
     public void setVOC(float VOC) {
@@ -319,8 +321,8 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         return mADC;
     }
 
-    public int getInfoByte() {
-        return mInfo != null ? mInfo.getInfoByte() : 0;
+    public Integer getInfoByte() {
+        return mInfo != null ? mInfo.getInfoByte() : null;
     }
 
     public String getMac() {
