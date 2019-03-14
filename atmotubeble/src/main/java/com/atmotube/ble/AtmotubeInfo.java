@@ -39,6 +39,7 @@ public class AtmotubeInfo implements Serializable {
     public final boolean mIsActivated;
     public final boolean mHasError;
     public final boolean mIsBonded;
+    public final boolean mIsPmOn;
 
     private int mInfoByte;
 
@@ -66,6 +67,7 @@ public class AtmotubeInfo implements Serializable {
         mMode = AtmotubeInfo.getMode(info);
         mIsChargingTimeout = AtmotubeInfo.isChargingTimeout(info);
         mIsCharging = AtmotubeInfo.isCharging(info);
+        mIsPmOn = AtmotubeInfo.isPmOn(info);
     }
 
     public int getInfoByte() {
@@ -78,6 +80,10 @@ public class AtmotubeInfo implements Serializable {
 
     public static boolean hasError(int info) {
         return (info & 0x2) == 0x2;
+    }
+
+    public static boolean isPmOn(int info) {
+        return (info & 0x1) == 0x1;
     }
 
     public static boolean isCalibrating(int info) {

@@ -20,6 +20,8 @@ import android.os.ParcelUuid;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import no.nordicsemi.android.support.v18.scanner.ScanRecord;
@@ -61,6 +63,18 @@ public class AtmotubeUtils {
 
     private static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
+    public static final int[] PM1_LEVELS = new int[]{
+            14, 34, 61, 95, 100
+    };
+
+    public static final int[] PM25_LEVELS = new int[]{
+            20, 50, 90, 140, 170
+    };
+
+    public static final int[] PM10_LEVELS = new int[]{
+            30, 75, 125, 200, 250
+    };
+
     /**
      * Return Air Quality Score (AQS) for ppm value
      *
@@ -77,6 +91,44 @@ public class AtmotubeUtils {
             return aqs < 0 ? 0 : aqs;
         }
     }
+
+    public static int getAQS(UpdateDataHolder data) {
+        if (data.getPm25() != UpdateDataHolder.UNKNOWN) {
+            return getAQS(data.getVOC(), data.getPm1(), data.getPm25(), data.getPm10());
+        } else {
+            return getAQS(data.getVOC());
+        }
+    }
+
+    private static int getPmAQS(float pm, int[] levels) {
+        int index = 0;
+        for (int pmLevel : levels) {
+            if (pm <= pmLevel) {
+                break;
+            }
+            index++;
+        }
+        if (index > levels.length - 1) {
+            index = levels.length - 1;
+        }
+        int range = index > 0 ? levels[index] - levels[index - 1] : levels[index];
+        float pm2 = index > 0 ? pm - levels[index - 1] : pm;
+        int aqs = (int) (100 - 20 * index - 20 * ((float) pm2 / range));
+        if (aqs < 0) {
+            aqs = 0;
+        }
+        return aqs;
+    }
+
+    public static int getAQS(float voc, float pm1, float pm25, float pm10) {
+        if (pm1 != UpdateDataHolder.UNKNOWN && pm25 != UpdateDataHolder.UNKNOWN && pm10 != UpdateDataHolder.UNKNOWN) {
+            Integer[] aqs = {getAQS(voc), getPmAQS(pm1, PM1_LEVELS), getPmAQS(pm25, PM25_LEVELS), getPmAQS(pm10, PM10_LEVELS)};
+            return Collections.min(Arrays.asList(aqs));
+        } else {
+            return getAQS(voc);
+        }
+    }
+
 
     /**
      * Check if current record is Atmotube in factory mode
@@ -397,5 +449,33 @@ public class AtmotubeUtils {
             case UpdateDataHolder.HW_VER_1_0:
                 return "1.0";
         }
+    }
+
+    private static int getVOCFromBytes(byte[] bytes) {
+        String vocStr = toHexString(bytes);
+        return Integer.parseInt(vocStr, 16);
+    }
+
+    public static int getPMFromBytes(byte[] bytes) {
+        String pmStr = toHexString(bytes);
+        return Integer.parseInt(pmStr, 16);
+    }
+
+    public static float getPMFromBytesFloat(byte[] bytes) {
+        String pmStr = toHexString(bytes);
+        return Integer.parseInt(pmStr, 16) / 100f;
+    }
+
+    public static float getFloatVOCFromBytes(byte[] bytes) {
+        return (float) getVOCFromBytes(bytes) / 100;
+    }
+
+    public static float getFloatVOCFromBytesV3V4(byte[] bytes) {
+        return (float) getVOCFromBytes(bytes) / 1000;
+    }
+
+    public static int getPressureFromBytes(byte[] bytes) {
+        String pressureStr = toHexString(bytes);
+        return Integer.parseInt(pressureStr, 16);
     }
 }

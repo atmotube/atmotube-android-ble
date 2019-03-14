@@ -37,6 +37,8 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     public static final int HW_VER_PRO = 4;
 
     public static final int UNKNOWN = -1000;
+    public static final int PM_OFF = 0xFFFF;
+    public static final float PM_OFF_FLOAT = 167772.15f; // 0xFFFFFF
 
     private float mVOC = UNKNOWN;
     private float mTemperature = UNKNOWN;
@@ -58,9 +60,9 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     private int mBatteryVoltage;
     private int mBatteryPercentage = UNKNOWN;
 
-    private int mPm1 = UNKNOWN;
-    private int mPm25 = UNKNOWN;
-    private int mPm10 = UNKNOWN;
+    private float mPm1 = UNKNOWN;
+    private float mPm25 = UNKNOWN;
+    private float mPm10 = UNKNOWN;
 
     private int mDeviceCRC = UNKNOWN;
 
@@ -83,7 +85,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         if (isHw3()) {
             return isGeneralDataOK && mPressure != UNKNOWN;
         } else if (isHw4()) {
-            return isGeneralDataOK && mPressure != UNKNOWN && mPm1 != UNKNOWN && mPm10 != UNKNOWN && mPm25 != UNKNOWN;
+            return isGeneralDataOK && (!isPmIsOn() || (mPressure != UNKNOWN && mPm1 != UNKNOWN && mPm10 != UNKNOWN && mPm25 != UNKNOWN));
         }
         return isGeneralDataOK;
     }
@@ -151,7 +153,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         readFromParcel(in);
     }
 
-    public UpdateDataHolder(float vocF, int temp, int hum, long ts) {
+    public UpdateDataHolder(float vocF, float temp, int hum, long ts) {
         mTemperature = temp;
         mHumidity = hum;
         mTime = ts;
@@ -175,9 +177,9 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         mInfo = b == -1 ? null : new AtmotubeInfo(b, mFwVer);
         mBatteryVoltage = in.readInt();
         mErrorCode = in.readInt();
-        mPm1 = in.readInt();
-        mPm25 = in.readInt();
-        mPm10 = in.readInt();
+        mPm1 = in.readFloat();
+        mPm25 = in.readFloat();
+        mPm10 = in.readFloat();
         mDeviceCRC = in.readInt();
         mBatteryPercentage = in.readInt();
     }
@@ -204,9 +206,9 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         dest.writeInt(mInfo == null ? -1 : mInfo.getInfoByte());
         dest.writeInt(mBatteryVoltage);
         dest.writeInt(mErrorCode);
-        dest.writeInt(mPm1);
-        dest.writeInt(mPm25);
-        dest.writeInt(mPm10);
+        dest.writeFloat(mPm1);
+        dest.writeFloat(mPm25);
+        dest.writeFloat(mPm10);
         dest.writeInt(mDeviceCRC);
         dest.writeInt(mBatteryPercentage);
     }
@@ -438,20 +440,38 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     }
 
     public void setPm(int pm1, int pm25, int pm10) {
+        if (pm1 == PM_OFF || pm25 == PM_OFF || pm10 == PM_OFF) {
+            mPm1 = UNKNOWN;
+            mPm25 = UNKNOWN;
+            mPm10 = UNKNOWN;
+            return;
+        }
         mPm1 = pm1;
         mPm25 = pm25;
         mPm10 = pm10;
     }
 
-    public int getPm1() {
+    public void setPm(float pm1, float pm25, float pm10) {
+        if (pm1 == PM_OFF_FLOAT || pm25 == PM_OFF_FLOAT || pm10 == PM_OFF_FLOAT) {
+            mPm1 = UNKNOWN;
+            mPm25 = UNKNOWN;
+            mPm10 = UNKNOWN;
+            return;
+        }
+        mPm1 = pm1;
+        mPm25 = pm25;
+        mPm10 = pm10;
+    }
+
+    public float getPm1() {
         return mPm1;
     }
 
-    public int getPm25() {
+    public float getPm25() {
         return mPm25;
     }
 
-    public int getPm10() {
+    public float getPm10() {
         return mPm10;
     }
 
@@ -463,7 +483,7 @@ public class UpdateDataHolder implements Parcelable, Serializable {
         JSONArray array = new JSONArray();
         array.put(mLat);
         array.put(mLon);
-        array.put(AtmotubeUtils.getAQS(mVOC));
+        array.put(AtmotubeUtils.getAQS(mVOC, mPm1, mPm25, mPm10));
         array.put(Math.round(mVOC * 100.0) / 100.0);
         array.put(mTemperature);
         array.put(mHumidity);
@@ -482,4 +502,9 @@ public class UpdateDataHolder implements Parcelable, Serializable {
     public boolean isBonded() {
         return mInfo != null && mInfo.mIsBonded;
     }
+
+    public boolean isPmIsOn() {
+        return mInfo != null && mInfo.mIsPmOn;
+    }
+
 }
