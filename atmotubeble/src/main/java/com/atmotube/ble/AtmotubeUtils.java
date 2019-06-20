@@ -312,30 +312,47 @@ public class AtmotubeUtils {
             float pressure = 0;
             int hum = 0;
             int baseline = 0;
+            int pm25Tech = 0;
             String fwVer = "";
             if (TextUtils.equals(name.toLowerCase(), ATMOTEST_V_3_0_NAME)) {
                 ScanRecord scanRecord = data.getScanRecord();
-                SparseArray<byte[]> mData = scanRecord.getManufacturerSpecificData();
-                int errorCode = 0;
-                if (mData != null && mData.size() == 1) {
-                    byte[] bytes = mData.get(mData.keyAt(0));
-                    int shift = 0;
-                    String vocStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
-                    int voc = Integer.parseInt(vocStr, 16);
-                    vocF = (float) voc / 1000;
-                    batteryPercentage = (int) bytes[shift++];
-                    info = 0x20;
-                    String voltageStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
-                    batteryVoltage = Integer.parseInt(voltageStr, 16);
-                    fwVer = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
-                    errorCode = (int) bytes[shift++];
-                    String baselineStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
-                    baseline = Integer.parseInt(baselineStr, 16);
-                    hum = getHumidity(bytes[shift++]);
-                    temp = getTemperature(bytes[shift]);
+                byte[] bytes = scanRecord.getBytes();
+                if (bytes == null) {
+                    return null;
                 }
-                return new UpdateDataHolder(name, vocF, temp, hum, pressure, info, baseline, fwVer, AtmotubeUtils.toHexString(scanRecord.getBytes()),
+                String str = toHexString(bytes);
+                int shift = 7;
+                String vocStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
+                int voc = Integer.parseInt(vocStr, 16);
+                vocF = (float) voc / 1000;
+                batteryPercentage = (int) bytes[shift++];
+                info = 0x20;
+                String voltageStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
+                batteryVoltage = Integer.parseInt(voltageStr, 16);
+                fwVer = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
+                int errorCode = (int) bytes[shift++];
+                String baselineStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
+                baseline = Integer.parseInt(baselineStr, 16);
+                hum = getHumidity(bytes[shift++]);
+                temp = getTemperature(bytes[shift]);
+
+                int mfIndex = str.indexOf("ffffff", 14);
+                if (mfIndex != -1) {
+                    shift = mfIndex / 2 + 3;
+                    String pressureStr = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) +
+                            AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift++]});
+                    int p = Integer.parseInt(pressureStr, 16);
+                    pressure = (float) p / 100;
+                    info = (int) bytes[shift++];
+                    String pm25Str = AtmotubeUtils.toHexString(new byte[]{bytes[shift++]}) + AtmotubeUtils.toHexString(new byte[]{bytes[shift]});
+                    pm25Tech = Integer.parseInt(pm25Str, 16);
+                }
+                UpdateDataHolder h = new UpdateDataHolder(name, vocF, temp, hum, pressure, info, baseline, fwVer, AtmotubeUtils.toHexString(scanRecord.getBytes()),
                         getHardwareVer(fwVer, null), data.getDevice().getAddress(), data.getRssi(), batteryVoltage, batteryPercentage, errorCode);
+                if (pm25Tech > 0) {
+                    h.setPm(0, pm25Tech, 0);
+                }
+                return h;
             } else if (TextUtils.equals(name.toLowerCase(), ATMOTUBE_NAME)) {
                 ScanRecord scanRecord = data.getScanRecord();
                 List<ParcelUuid> services = scanRecord.getServiceUuids();

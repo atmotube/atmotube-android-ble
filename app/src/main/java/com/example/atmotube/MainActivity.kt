@@ -43,13 +43,15 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        override fun onScanResult(callbackType: Int, result: ScanResult?) {
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
             val resultHolder = AtmotubeUtils.getDataFromScanResult(result)
             println("@@@ " + result!!.device.address + " -> " + resultHolder)
         }
 
-        override fun onBatchScanResults(results: MutableList<ScanResult>?) {
+        override fun onBatchScanResults(results: MutableList<ScanResult>) {
+            super.onBatchScanResults(results)
         }
+
     }
 
     private val mCallback : MyCallback = MyCallback()
@@ -75,7 +77,6 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(enableIntent, ENABLE_BT_REQ)
             return
         }
-        print("@@@ startScan")
         val scanner = BluetoothLeScannerCompat.getScanner()
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
         scanner!!.startScan(null, settings, mCallback)
